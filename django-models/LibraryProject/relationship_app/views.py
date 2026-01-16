@@ -1,4 +1,7 @@
 # ... ensure these imports are at the top of your file ...
+from django.contrib.auth.decorators import permission_required
+from django.shortcuts import get_object_or_404
+
 from django.shortcuts import render, redirect
 from django.views.generic.detail import DetailView
 from django.contrib.auth import login
