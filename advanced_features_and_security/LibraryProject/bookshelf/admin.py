@@ -12,3 +12,15 @@ class CustomUserAdmin(UserAdmin):
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)
+
+
+from .models import CustomUser, Book
+
+# ... (Keep existing CustomUserAdmin code) ...
+
+class BookAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'publication_year')
+    search_fields = ('title', 'author')
+
+admin.site.register(Book, BookAdmin)
+
