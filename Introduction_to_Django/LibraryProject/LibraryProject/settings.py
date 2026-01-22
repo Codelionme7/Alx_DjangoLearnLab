@@ -118,5 +118,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-AUTH_USER_MODEL = 'relationship_app.CustomUser'
+# Change this line to point to 'bookshelf' instead of 'relationship_app'
+AUTH_USER_MODEL = 'bookshelf.CustomUser'
+
 
