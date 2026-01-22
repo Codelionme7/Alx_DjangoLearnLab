@@ -1,31 +1,40 @@
-from django.shortcuts import render, get_object_or_404, redirect
+ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import permission_required
 from .models import Book
+from .forms import ExampleForm
 
-# View to list books (Requires can_view permission)
+# Secure View: Lists books
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
     books = Book.objects.all()
     return render(request, 'bookshelf/book_list.html', {'books': books})
 
-# View to create a book (Requires can_create permission)
+# Secure View: Creates book using Form Validation
 @permission_required('bookshelf.can_create', raise_exception=True)
 def create_book(request):
     if request.method == 'POST':
-        # Logic to create book would go here
-        pass
-    return render(request, 'bookshelf/form_example.html')
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('book_list')
+    else:
+        form = ExampleForm()
+    return render(request, 'bookshelf/form_example.html', {'form': form})
 
-# View to edit a book (Requires can_edit permission)
+# Secure View: Edits book using Form Validation
 @permission_required('bookshelf.can_edit', raise_exception=True)
 def edit_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
     if request.method == 'POST':
-        # Logic to update book would go here
-        pass
-    return render(request, 'bookshelf/form_example.html', {'book': book})
+        form = ExampleForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('book_list')
+    else:
+        form = ExampleForm(instance=book)
+    return render(request, 'bookshelf/form_example.html', {'form': form})
 
-# View to delete a book (Requires can_delete permission)
+# Secure View: Deletes book
 @permission_required('bookshelf.can_delete', raise_exception=True)
 def delete_book(request, pk):
     book = get_object_or_404(Book, pk=pk)
@@ -33,3 +42,14 @@ def delete_book(request, pk):
         book.delete()
         return redirect('book_list')
     return render(request, 'bookshelf/book_confirm_delete.html', {'book': book})
+
+# Secure View: Search books (Prevents SQL Injection via ORM)
+@permission_required('bookshelf.can_view', raise_exception=True)
+def search_books(request):
+    query = request.GET.get('q')
+    if query:
+        # ORM automatically handles escaping, preventing SQL injection
+        books = Book.objects.filter(title__icontains=query)
+    else:
+        books = Book.objects.all()
+    return render(request, 'bookshelf/book_list.html', {'books': books})
