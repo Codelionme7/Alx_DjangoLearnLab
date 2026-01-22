@@ -109,3 +109,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CRITICAL CONFIGURATION FOR TASK 0 ---
 AUTH_USER_MODEL = 'bookshelf.CustomUser' 
+
+
+
+# 1. Set DEBUG to False for production simulation
+DEBUG = False 
+
+# 2. Browser-side protections (XSS, Frame Options, Content Type)
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# 3. Secure Cookies (Enforce HTTPS)
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# 4. Content Security Policy (CSP)
+# Restricts resources to be loaded from self only
+CSP_DEFAULT_SRC = ("'self'",)
+
+# 5. Define ALLOWED_HOSTS (Required when DEBUG=False)
+ALLOWED_HOSTS = ['*']  # For testing purposes only. In real prod, use your domain.
+
