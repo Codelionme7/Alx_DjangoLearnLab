@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, Book
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -11,16 +11,9 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('date_of_birth', 'profile_photo')}),
     )
 
-admin.site.register(CustomUser, CustomUserAdmin)
-
-
-from .models import CustomUser, Book
-
-# ... (Keep existing CustomUserAdmin code) ...
-
 class BookAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'publication_year')
     search_fields = ('title', 'author')
 
+admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Book, BookAdmin)
-
