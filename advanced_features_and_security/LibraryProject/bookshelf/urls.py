@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+
+    path('admin/', admin.site.urls),
+    path('', include('bookshelf.urls')),
     path('books/', views.book_list, name='book_list'),
     path('books/create/', views.create_book, name='create_book'),
     path('books/edit/<int:pk>/', views.edit_book, name='edit_book'),
