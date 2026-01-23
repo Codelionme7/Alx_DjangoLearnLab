@@ -18,3 +18,20 @@ We have established the following groups in the Django Admin:
 
 ### Testing
 To test, log in with users assigned to these groups and attempt to access the protected views in `views.py`.
+
+
+# Security & Permissions Setup
+
+## Custom User Model
+Using `bookshelf.CustomUser` with `date_of_birth` and `profile_photo`.
+
+## Permissions & Groups
+Defined in `bookshelf/models.py`:
+- `can_view`, `can_create`, `can_edit`, `can_delete`
+Groups (Viewers, Editors, Admins) should be created in Admin panel.
+
+## Security Features
+- **CSRF**: All forms use `{% csrf_token %}`.
+- **XSS/CSP**: Headers configured in settings.
+- **HTTPS**: `SECURE_SSL_REDIRECT` and HSTS enabled.
+- **Secure Views**: `@permission_required` enforces access control.
