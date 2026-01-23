@@ -1,35 +1,31 @@
-# Advanced Features and Security
+# Django Advanced Features and Security
 
-## Permissions and Groups Setup
-This project implements a role-based access control system using Django's built-in permissions and groups.
+## Permissions and Groups Documentation
 
-### Custom Permissions
-We have defined custom permissions on the `Book` model in `bookshelf/models.py`:
+This project utilizes Django's permission system to enforce Role-Based Access Control (RBAC).
 
-* `bookshelf.can_view`: Allows a user to view the list of books.
-* `bookshelf.can_create`: Allows a user to create new book entries.
-* `bookshelf.can_edit`: Allows a user to modify existing book entries.
-* `bookshelf.can_delete`: Allows a user to remove book entries.
+### Custom Permissions (bookshelf.models.Book)
+The following custom permissions have been defined in `models.py`:
+- `can_view`: Allows the user to view book instances.
+- `can_create`: Allows the user to create new book instances.
+- `can_edit`: Allows the user to edit existing book instances.
+- `can_delete`: Allows the user to delete book instances.
 
 ### Groups Configuration
-The following groups are configured in the Django Admin to manage access:
+We have established the following groups in the Django Admin to manage these permissions:
 
-1.  **Viewers**
-    * **Permissions:** `can_view`
-    * **Role:** Read-only access to the book list.
+1. **Viewers**
+   - **Permissions:** `can_view`
+   - **Role:** Read-only access to library content.
 
-2.  **Editors**
-    * **Permissions:** `can_view`, `can_create`, `can_edit`
-    * **Role:** Can create and modify books but cannot delete them.
+2. **Editors**
+   - **Permissions:** `can_view`, `can_create`, `can_edit`
+   - **Role:** Can create and update content but cannot delete.
 
-3.  **Admins**
-    * **Permissions:** `can_view`, `can_create`, `can_edit`, `can_delete`
-    * **Role:** Full administrative control over book entries.
+3. **Admins**
+   - **Permissions:** `can_view`, `can_create`, `can_edit`, `can_delete`
+   - **Role:** Full administrative control over the library.
 
-### How to Test
-1.  **Create Users:** Create test users via the Django Admin.
-2.  **Assign Groups:** Assign users to the groups defined above.
-3.  **Access Views:**
-    * `can_edit` permission is required to access the edit view.
-    * `can_create` permission is required to access the creation view.
-    * Users without the correct permission will be denied access (403 Forbidden).
+### Implementation Details
+- **Views:** Access to views is restricted using the `@permission_required` decorator.
+- **Example:** The `edit_book` view checks for `bookshelf.can_edit`.
