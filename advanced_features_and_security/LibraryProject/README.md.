@@ -1,20 +1,35 @@
-# Django Advanced Features and Security
+# Advanced Features and Security
 
 ## Permissions and Groups Setup
-This project uses custom permissions on the `Book` model to control access.
+This project implements a role-based access control system using Django's built-in permissions and groups.
 
 ### Custom Permissions
-The following permissions were defined in `models.py`:
-- `bookshelf.can_view`: Permission to view the list of books.
-- `bookshelf.can_create`: Permission to create new books.
-- `bookshelf.can_edit`: Permission to edit existing books.
-- `bookshelf.can_delete`: Permission to delete books.
+We have defined custom permissions on the `Book` model in `bookshelf/models.py`:
 
-### Groups
-We have established the following groups in the Django Admin:
-1. **Viewers**: Assigned `can_view`.
-2. **Editors**: Assigned `can_view`, `can_create`, `can_edit`.
-3. **Admins**: Assigned `can_view`, `can_create`, `can_edit`, `can_delete`.
+* `bookshelf.can_view`: Allows a user to view the list of books.
+* `bookshelf.can_create`: Allows a user to create new book entries.
+* `bookshelf.can_edit`: Allows a user to modify existing book entries.
+* `bookshelf.can_delete`: Allows a user to remove book entries.
 
-### Testing
-To test, log in with users assigned to these groups and attempt to access the protected views in `views.py`.
+### Groups Configuration
+The following groups are configured in the Django Admin to manage access:
+
+1.  **Viewers**
+    * **Permissions:** `can_view`
+    * **Role:** Read-only access to the book list.
+
+2.  **Editors**
+    * **Permissions:** `can_view`, `can_create`, `can_edit`
+    * **Role:** Can create and modify books but cannot delete them.
+
+3.  **Admins**
+    * **Permissions:** `can_view`, `can_create`, `can_edit`, `can_delete`
+    * **Role:** Full administrative control over book entries.
+
+### How to Test
+1.  **Create Users:** Create test users via the Django Admin.
+2.  **Assign Groups:** Assign users to the groups defined above.
+3.  **Access Views:**
+    * `can_edit` permission is required to access the edit view.
+    * `can_create` permission is required to access the creation view.
+    * Users without the correct permission will be denied access (403 Forbidden).
