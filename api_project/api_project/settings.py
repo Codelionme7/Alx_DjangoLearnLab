@@ -15,6 +15,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+# Third-party apps
+    'rest_framework',
+    'rest_framework.authtoken',  # <--- Step 1: Add this
+    # Local apps
+    'api',
+]
+
+# ... (Existing Middleware, Templates, Database settings) ...
+
+# --- Step 1: Configure DRF Authentication & Permissions ---
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', # Locks down API by default
+    ]
+}
     # Task Step 2: Add DRF
     'rest_framework',
     # Task Step 3: Add your API app
