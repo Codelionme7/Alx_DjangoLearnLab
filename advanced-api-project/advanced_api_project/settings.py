@@ -1,9 +1,16 @@
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-advanced-api-setup-key'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-setup-key'
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 ALLOWED_HOSTS = []
+
+# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -12,8 +19,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Task Step 2: Add DRF and Local App
+    # Third-party apps
     'rest_framework',
+    # Local apps
     'api',
 ]
 
