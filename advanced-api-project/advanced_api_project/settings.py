@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Requirements for Task 0
     'rest_framework',
+    'django_filters',
     'api',
 ]
 
