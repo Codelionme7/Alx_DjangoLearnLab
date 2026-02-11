@@ -1,44 +1,44 @@
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from .models import Post, Comment
-from .forms import CommentForm
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Q # Required for complex queries
+from django.views.generic import ListView
+from .models import Post
+from taggit.models import Tag
 
-class CommentCreateView(LoginRequiredMixin, CreateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/comment_form.html'
+# Update PostListView to handle search and filtering
+class PostListView(ListView):
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+    ordering = ['-published_date']
+    paginate_by = 5 # Optional: Pagination
 
-    def form_valid(self, form):
-        # Link the comment to the current post and logged-in user
-        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Search Functionality
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(content__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct()
+            
+        return queryset
 
-    def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.kwargs['pk']})
+# View to list posts by a specific tag
+class PostByTagListView(ListView):
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+    
+    def get_queryset(self):
+        # Get the tag from the URL and filter posts
+        tag_slug = self.kwargs.get('tag_slug')
+        self.tag = get_object_or_404(Tag, slug=tag_slug)
+        return Post.objects.filter(tags__in=[self.tag])
 
-class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Comment
-    form_class = CommentForm
-    template_name = 'blog/comment_form.html'
-
-    def get_success_url(self):
-        # Redirect back to the post the comment belongs to
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
-
-    def test_func(self):
-        comment = self.get_object()
-        return self.request.user == comment.author
-
-class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Comment
-    template_name = 'blog/comment_confirm_delete.html'
-
-    def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
-
-    def test_func(self):
-        comment = self.get_object()
-        return self.request.user == comment.author
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_tag'] = self.tag
+        return context
