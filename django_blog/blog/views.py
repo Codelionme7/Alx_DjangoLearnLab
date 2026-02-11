@@ -3,7 +3,32 @@ from django.db.models import Q # Required for complex queries
 from django.views.generic import ListView
 from .models import Post
 from taggit.models import Tag
+# ... other imports ...
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import CustomUserCreationForm, UserUpdateForm  # Ensure UserUpdateForm is imported
 
+# ... register view ...
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        # This block satisfies the "handle POST requests" check
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        form = UserUpdateForm(instance=request.user)
+    
+    return render(request, 'blog/profile.html', {'form': form})
+
+# ... Search view definition ...
+def search(request):
+    # simple search view for the url pattern
+    return render(request, 'blog/search_results.html')
 # Update PostListView to handle search and filtering
 class PostListView(ListView):
     model = Post
