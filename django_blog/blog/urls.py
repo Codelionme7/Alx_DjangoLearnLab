@@ -1,14 +1,16 @@
 from django.urls import path
-from .views import (
-    PostListView, PostDetailView, PostCreateView, PostUpdateView, PostDeleteView,
-    CommentCreateView, CommentUpdateView, CommentDeleteView
-)
+from .views import PostListView, PostByTagListView, PostDetailView, PostCreateView, PostUpdateView, PostDeleteView
 
 urlpatterns = [
-    # ... (Keep existing Post URLs) ...
-
-    # Comment URLs
-    path('post/<int:pk>/comments/new/', CommentCreateView.as_view(), name='add-comment'),
-    path('comment/<int:pk>/update/', CommentUpdateView.as_view(), name='edit-comment'),
-    path('comment/<int:pk>/delete/', CommentDeleteView.as_view(), name='delete-comment'),
+    # Search is handled by the main list view with ?q= parameter
+    path('', PostListView.as_view(), name='post-list'),
+    
+    # Tagging URL
+    path('tags/<slug:tag_slug>/', PostByTagListView.as_view(), name='post-by-tag'),
+    
+    # ... existing URLs ...
+    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+    # ...
+    # Search URL (optional specific path, but usually handled by root)
+    path('search/', PostListView.as_view(), name='search-posts'),
 ]
