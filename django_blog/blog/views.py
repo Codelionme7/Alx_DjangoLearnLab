@@ -1,20 +1,37 @@
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Q # Required for complex queries
-from django.views.generic import ListView
-from .models import Post
-from taggit.models import Tag
-# ... other imports ...
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm, UserUpdateForm  # Ensure UserUpdateForm is imported
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import (
+    ListView, 
+    DetailView, 
+    CreateView, 
+    UpdateView, 
+    DeleteView
+)
+from django.db.models import Q
+from taggit.models import Tag
+from django.contrib import messages
+from .models import Post, Comment
+from .forms import CustomUserCreationForm, UserUpdateForm, CommentForm
 
-# ... register view ...
+# --- Authentication Views ---
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registration successful!')
+            return redirect('profile')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'blog/register.html', {'form': form})
 
 @login_required
 def profile(request):
     if request.method == 'POST':
-        # This block satisfies the "handle POST requests" check
         form = UserUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
@@ -22,25 +39,19 @@ def profile(request):
             return redirect('profile')
     else:
         form = UserUpdateForm(instance=request.user)
-    
     return render(request, 'blog/profile.html', {'form': form})
 
-# ... Search view definition ...
-def search(request):
-    # simple search view for the url pattern
-    return render(request, 'blog/search_results.html')
-# Update PostListView to handle search and filtering
+# --- Post CRUD Views (The Fix for your Error) ---
+
 class PostListView(ListView):
     model = Post
     template_name = 'blog/post_list.html'
     context_object_name = 'posts'
     ordering = ['-published_date']
-    paginate_by = 5 # Optional: Pagination
+    paginate_by = 5
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        
-        # Search Functionality
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(
@@ -48,17 +59,89 @@ class PostListView(ListView):
                 Q(content__icontains=query) |
                 Q(tags__name__icontains=query)
             ).distinct()
-            
         return queryset
 
-# View to list posts by a specific tag
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/post_detail.html'
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = ['title', 'content', 'tags']
+    template_name = 'blog/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    fields = ['title', 'content', 'tags']
+    template_name = 'blog/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    success_url = '/'
+    template_name = 'blog/post_confirm_delete.html'
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+
+# --- Comment Views ---
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def form_valid(self, form):
+        form.instance.post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.object.post.get_absolute_url()
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+    def get_success_url(self):
+        return self.object.post.get_absolute_url()
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+    def get_success_url(self):
+        return self.object.post.get_absolute_url()
+
+# --- Tagging View ---
+
 class PostByTagListView(ListView):
     model = Post
     template_name = 'blog/post_list.html'
     context_object_name = 'posts'
     
     def get_queryset(self):
-        # Get the tag from the URL and filter posts
         tag_slug = self.kwargs.get('tag_slug')
         self.tag = get_object_or_404(Tag, slug=tag_slug)
         return Post.objects.filter(tags__in=[self.tag])
