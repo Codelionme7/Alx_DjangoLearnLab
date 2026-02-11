@@ -1,12 +1,15 @@
 {% extends "blog/base.html" %}
 {% block content %}
-    <h1>Blog Posts</h1>
-    <a href="{% url 'post-create' %}" class="btn btn-primary">New Post</a>
+    
+    {% if request.GET.q %}
+        <h3>Search results for "{{ request.GET.q }}"</h3>
+    {% elif current_tag %}
+        <h3>Posts tagged with "{{ current_tag.name }}"</h3>
+    {% endif %}
+
     {% for post in posts %}
-        <article>
-            <h2><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
-            <p>By {{ post.author }} on {{ post.published_date|date:"F d, Y" }}</p>
-            <p>{{ post.content|truncatewords:30 }}</p>
-        </article>
+        {% empty %}
+        <p>No posts found.</p>
     {% endfor %}
+
 {% endblock %}
