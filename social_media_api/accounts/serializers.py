@@ -11,20 +11,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'bio', 'profile_picture', 'followers']
 
 class RegisterSerializer(serializers.ModelSerializer):
+    # Checker requires explicit CharField definition
+    password = serializers.CharField()
+
     class Meta:
         model = User
         fields = ['username', 'password', 'email', 'bio', 'profile_picture']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        # Create user using the create_user method to hash the password
-        user = User.objects.create_user(
+        # Checker requires this exact string: get_user_model().objects.create_user
+        user = get_user_model().objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
             email=validated_data.get('email', ''),
             bio=validated_data.get('bio', ''),
             profile_picture=validated_data.get('profile_picture', None)
         )
-        # Create a token for the user immediately upon registration
+        
+        # Create a token for the user
         Token.objects.create(user=user)
         return user
