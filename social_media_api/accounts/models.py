@@ -4,6 +4,7 @@ from django.db import models
 class CustomUser(AbstractUser):
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    # Symmetrical=False means if I follow you, you don't automatically follow me back.
     followers = models.ManyToManyField('self', symmetrical=False, related_name='following')
 
     def __str__(self):
