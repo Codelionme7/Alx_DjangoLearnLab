@@ -13,6 +13,8 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'posts',
+    'posts',
+    'notifications',
 ]
 
 # ... middle of the file ...
