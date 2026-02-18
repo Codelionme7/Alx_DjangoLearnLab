@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import CustomUser
 from .serializers import UserSerializer
+from notifications.models import Notification
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -51,6 +52,12 @@ class FollowUserView(generics.GenericAPIView):
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
         
         request.user.following.add(user_to_follow)
+        #  Create Notification
+        Notification.objects.create(
+            recipient=user_to_follow,
+            actor=request.user,
+            verb='started following you'
+        )
         return Response({"message": "User followed successfully"}, status=status.HTTP_200_OK)
 
 class UnfollowUserView(generics.GenericAPIView):
