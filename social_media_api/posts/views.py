@@ -1,6 +1,10 @@
 from rest_framework import viewsets, permissions
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
+from rest_framework import viewsets, permissions, generics
+from .models import Post, Comment
+from .serializers import PostSerializer, CommentSerializer
+from rest_framework.permissions import IsAuthenticated
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -25,3 +29,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+class FeedView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get users the current user is following
+        following_users = self.request.user.following.all()
+        # Filter posts where author is in that list, order by creation date
+        return Post.objects.filter(author__in=following_users).order_by('-created_at')
