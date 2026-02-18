@@ -1,3 +1,6 @@
+import os
+import dj_database_url
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
